@@ -1,0 +1,49 @@
+service: csharp
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: dotnet6
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: '*'
+
+package:
+  individually: true
+
+functions:
+  hello:
+    handler: CsharpHandlers::AwsDotnetCsharp.Handler::Hello
+    events:
+      - http:
+          cors: true
+          method: get
+          path: /poc/docx-poc/hello
+
+    package:
+      artifact: bin/Release/net6.0/hello.zip
+    #  exclude:
+    #    - exclude-me.js
+    #    - exclude-me-dir/**
+
+resources:
+  Resources:
+    PocDocx:
+      Type: AWS::S3::Bucket
+      DeletionPolicy: Retain
+      Properties:
+        BucketName : poc-docx-cs
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
