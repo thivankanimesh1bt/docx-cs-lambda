@@ -18,8 +18,6 @@ public class Handler
       byte[] byteArray = File.ReadAllBytes(fileName);
       MemoryStream stream = new MemoryStream();
       stream.Write(byteArray, 0, (int)byteArray.Length);
-      // Use the file name and path passed in as an argument 
-      // to open an existing Word 2007 document.
 
       var textReplaces = new Dictionary<string, string>();
       textReplaces.Add("{{var1}}", "Example Name");
@@ -36,9 +34,6 @@ public class Handler
       textReplaces.Add("{{var13}}", "7,000");
 
       using (WordprocessingDocument doc = WordprocessingDocument.Open(stream, true)) {
-        // string input="abc123def";
-        // var output = Regex.Replace(input, @"\d", m=>(m.Value[0]-'0'+ 5).ToString());
-        // Console.WriteLine(output);
         // Replacing
         string docText = null;
         using (StreamReader sr = new StreamReader(doc.MainDocumentPart.GetStream()))
@@ -48,7 +43,6 @@ public class Handler
 
         foreach (KeyValuePair<string, string> entry in textReplaces)
         {
-            // do something with entry.Value or entry.Key
             Regex regexText = new Regex(entry.Key);
             docText = regexText.Replace(docText, entry.Value);
         }
@@ -58,28 +52,18 @@ public class Handler
             sw.Write(docText);
         }
 
+        var tables = doc.MainDocumentPart.Document.Descendants<Table>();
 
-        docText = null;
-        using (StreamReader sr = new StreamReader(doc.HeaderPart.Header.GetStream()))
-        {
-            docText = sr.ReadToEnd();
+        int i = 0;
+        while (i < 1500) {
+          var copyTable = tables.ElementAt(1).CloneNode(true);
+          doc.MainDocumentPart.Document.Body.Append(new Paragraph(new Run(new Text(" "))));
+          doc.MainDocumentPart.Document.Body.Append(copyTable);
+          i++;
         }
 
-        foreach (KeyValuePair<string, string> entry in textReplaces)
-        {
-            // do something with entry.Value or entry.Key
-            Regex regexText = new Regex(entry.Key);
-            docText = regexText.Replace(docText, entry.Value);
-        }
-
-        using (StreamWriter sw = new StreamWriter(doc.HeaderPart.Header.GetStream(FileMode.Create)))
-        {
-            sw.Write(docText);
-        }
-
-
-        doc.MainDocumentPart.Document.Body.Append(new Paragraph(new Run(new Text(" "))));
-        foreach (Table t in doc.MainDocumentPart.Document.Descendants<Table>())
+        // doc.MainDocumentPart.Document.Body.Append(new Paragraph(new Run(new Text(" "))));
+        foreach (Table t in tables)
         {
             var rows = t.Descendants<DocumentFormat.OpenXml.Wordprocessing.TableRow>();
             foreach (DocumentFormat.OpenXml.Wordprocessing.TableRow row in rows) {
@@ -180,7 +164,7 @@ public class Handler
       }
     }
 
-    public async Task<Response> Hello(Request request)
+    public async Task<Response> DocxGenerate(Request request)
     {
         await CreateTable("doc1.docx");
         return new Response("Go Serverless v1.0! Your function executed successfully!", request);

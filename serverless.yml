@@ -17,16 +17,12 @@ package:
   individually: true
 
 functions:
-  hello:
-    handler: CsharpHandlers::AwsDotnetCsharp.Handler::Hello
-    events:
-      - http:
-          cors: true
-          method: get
-          path: /poc/docx-poc/hello
+  DocxGenerate:
+    handler: CsharpHandlers::AwsDotnetCsharp.Handler::DocxGenerate
+    timeout: 900
 
     package:
-      artifact: bin/Release/net6.0/hello.zip
+      artifact: bin/Release/net6.0/DocxGenerate.zip
     #  exclude:
     #    - exclude-me.js
     #    - exclude-me-dir/**
